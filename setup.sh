@@ -191,8 +191,8 @@ step4_sdk_components() {
     sdkmanager --install \
         "platform-tools" \
         "emulator" \
-        "platforms;android-34" \
-        "build-tools;34.0.0" \
+        "platforms;android-36" \
+        "build-tools;36.0.0" \
         "system-images;android-34;google_apis;x86_64"
 
     # Verify installations

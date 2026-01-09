@@ -6,7 +6,7 @@ Gigachad Flutter development setup for Arch Linux. **No Android Studio required.
 - KVM-accelerated emulator
 - Flutter stable via git
 - Neovim (LazyVim) integration with flutter-tools.nvim
-- Justfile workflow commands
+- Makefile workflow commands
 
 ## Quick Start
 
@@ -60,35 +60,33 @@ Then open Neovim and run `:Lazy` to install plugins.
 | `<leader>Fo` | Widget Outline |
 | `<leader>Fp` | Pub Get |
 
-## Workflow (justfile)
+## Workflow (Makefile)
 
-Copy `justfile` to your Flutter project root:
+Copy `Makefile` to your Flutter project root:
 
 ```bash
-cp justfile ~/your-flutter-project/
+cp Makefile ~/your-flutter-project/
 ```
 
-Install just: `sudo pacman -S just`
-
 ```bash
-just emu       # Launch emulator
-just run       # flutter run
-just test      # flutter test
-just analyze   # flutter analyze
-just fmt       # dart format .
-just clean     # flutter clean
-just doctor    # flutter doctor -v
-just check     # fmt + analyze + test
+make emu       # Launch emulator
+make run       # flutter run
+make test      # flutter test
+make analyze   # flutter analyze
+make fmt       # dart format .
+make clean     # flutter clean
+make doctor    # flutter doctor -v
+make check     # fmt + analyze + test
 ```
 
 ## Daily Workflow
 
 ```bash
 # Start of day
-just emu
+make emu
 
 # Development loop
-just run
+make run
 # Edit code in Neovim
 # Press 'r' for hot reload
 # Press 'R' for hot restart
