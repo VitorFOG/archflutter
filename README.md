@@ -12,7 +12,7 @@ Gigachad Flutter development setup for Arch Linux. **No Android Studio required.
 
 ```bash
 # Clone
-git clone https://github.com/YOUR_USERNAME/archflutter.git
+git clone https://github.com/VitorFOG/archflutter.git
 cd archflutter
 
 # Run setup (requires sudo for pacman)
