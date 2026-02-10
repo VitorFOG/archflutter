@@ -33,7 +33,7 @@ flutter doctor
 | Flutter SDK | `~/.local/flutter` |
 | AVD (pixel_api34) | `~/.android/avd/` |
 
-**System packages:** `jdk17-openjdk`, `android-tools`, `android-udev`, `libvirt`, `qemu-full`, `dnsmasq`, `bridge-utils`
+**System packages:** `jdk17-openjdk`, `android-tools`, `android-udev`, `libvirt`, `qemu-full`, `dnsmasq` (the setup script auto-skips packages unavailable in your pacman repos, e.g. `bridge-utils`)
 
 **SDK components:** `platform-tools`, `emulator`, `platforms;android-36`, `build-tools;36.0.0`, `system-images;android-34;google_apis;x86_64`
 

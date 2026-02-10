@@ -22,13 +22,34 @@ CMDLINE_TOOLS_SHA256="7ec965280a073311c339e571cd5de778b9975026cfcbe79f2b1cdcb1e1
 # ============================================================
 step1_system_deps() {
     log "Installing system dependencies via pacman..."
-    sudo pacman -S --needed --noconfirm \
-        git curl unzip zip \
-        base-devel clang cmake ninja \
-        ripgrep fd fzf \
-        jdk17-openjdk \
-        android-tools android-udev \
+    local packages=(
+        git curl unzip zip
+        base-devel clang cmake ninja
+        ripgrep fd fzf
+        jdk17-openjdk
+        android-tools android-udev
         libvirt qemu-full dnsmasq bridge-utils
+    )
+    local available=()
+    local missing=()
+
+    for pkg in "${packages[@]}"; do
+        if pacman -Si "$pkg" >/dev/null 2>&1; then
+            available+=("$pkg")
+        else
+            missing+=("$pkg")
+        fi
+    done
+
+    if [ "${#missing[@]}" -gt 0 ]; then
+        warn "Skipping unavailable packages: ${missing[*]}"
+    fi
+    if [ "${#available[@]}" -eq 0 ]; then
+        err "No installable packages were found in configured pacman repos."
+        exit 1
+    fi
+
+    sudo pacman -S --needed --noconfirm "${available[@]}"
 
     # Set JAVA_HOME for JDK 17
     if ! grep -q "JAVA_HOME.*java-17-openjdk" ~/.zshrc 2>/dev/null; then
