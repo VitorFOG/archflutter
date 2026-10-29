@@ -3,7 +3,7 @@
 Gigachad Flutter development setup for Arch Linux. **No Android Studio required.**
 
 - CLI-only Android SDK (sdkmanager, avdmanager, emulator)
-- KVM-accelerated emulator
+- KVM-accelerated emulator (optional, skip it with `--no-emulator`)
 - Flutter stable via git
 - Neovim (LazyVim) integration with flutter-tools.nvim
 - Makefile workflow commands
@@ -25,17 +25,43 @@ sudo reboot
 flutter doctor
 ```
 
+### Physical device only (no emulator)
+
+To debug on a phone over USB, skip KVM, the emulator, the system image and the AVD:
+
+```bash
+./setup.sh --no-emulator
+
+# Enable USB debugging on the phone, plug it in, then:
+adb devices
+flutter devices
+```
+
+No reboot is needed in this mode. To add the emulator later, run `./setup.sh` again without the flag.
+
 ## What Gets Installed
 
 | Component | Location |
 |-----------|----------|
 | Android SDK | `~/Android/Sdk` |
 | Flutter SDK | `~/.local/flutter` |
-| AVD (pixel_api34) | `~/.android/avd/` |
+| AVD (pixel_api34)\* | `~/.android/avd/` |
 
-**System packages:** `jdk17-openjdk`, `android-tools`, `android-udev`, `libvirt`, `qemu-full`, `dnsmasq` (the setup script auto-skips packages unavailable in your pacman repos, e.g. `bridge-utils`)
+**System packages:** `jdk17-openjdk`, `android-tools`, `android-udev`, `libvirt`\*, `qemu-full`\*, `dnsmasq`\* (the setup script auto-skips packages unavailable in your pacman repos, e.g. `bridge-utils`\*)
 
-**SDK components:** `platform-tools`, `emulator`, `platforms;android-36`, `build-tools;36.0.0`, `system-images;android-34;google_apis;x86_64`
+**SDK components:** `platform-tools`, `emulator`\*, `platforms;android-36`, `build-tools;36.0.0`, `system-images;android-34;google_apis;x86_64`\*
+
+\* Skipped with `--no-emulator`.
+
+## VS Code
+
+The setup does not depend on an editor. Install the Flutter extension, which also installs the Dart extension:
+
+```bash
+code --install-extension Dart-Code.flutter
+```
+
+The extension finds `flutter` on your `PATH`. If you start VS Code from a desktop launcher that does not read `~/.zshrc`, set `dart.flutterSdkPath` to the full path of `~/.local/flutter` in your settings.
 
 ## Neovim Setup
 
@@ -95,8 +121,8 @@ make run
 ## Requirements
 
 - Arch Linux (or Arch-based distro)
-- CPU with virtualization (Intel VT-x or AMD-V)
-- ~10GB disk space
+- CPU with virtualization (Intel VT-x or AMD-V), for the emulator only
+- ~10GB disk space with the emulator, less without it
 
 ## Troubleshooting
 
