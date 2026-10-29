@@ -16,6 +16,7 @@ ANDROID_SDK_ROOT="$HOME/Android/Sdk"
 FLUTTER_ROOT="$HOME/.local/flutter"
 CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip"
 CMDLINE_TOOLS_SHA256="7ec965280a073311c339e571cd5de778b9975026cfcbe79f2b1cdcb1e15317ee"
+WITH_EMULATOR=1
 
 # ============================================================
 # STEP 1: System Dependencies
@@ -28,8 +29,10 @@ step1_system_deps() {
         ripgrep fd fzf
         jdk17-openjdk
         android-tools android-udev
-        libvirt qemu-full dnsmasq bridge-utils
     )
+    if [ "$WITH_EMULATOR" -eq 1 ]; then
+        packages+=(libvirt qemu-full dnsmasq bridge-utils)
+    fi
     local available=()
     local missing=()
 
@@ -208,13 +211,16 @@ step4_sdk_components() {
     yes | sdkmanager --licenses || true
 
     # Install components
-    log "Installing platform-tools, emulator, platform, build-tools, system-image..."
-    sdkmanager --install \
-        "platform-tools" \
-        "emulator" \
-        "platforms;android-36" \
-        "build-tools;36.0.0" \
-        "system-images;android-34;google_apis;x86_64"
+    local components=(
+        "platform-tools"
+        "platforms;android-36"
+        "build-tools;36.0.0"
+    )
+    if [ "$WITH_EMULATOR" -eq 1 ]; then
+        components+=("emulator" "system-images;android-34;google_apis;x86_64")
+    fi
+    log "Installing ${components[*]}..."
+    sdkmanager --install "${components[@]}"
 
     # Verify installations
     log "Verifying installations..."
@@ -226,10 +232,12 @@ step4_sdk_components() {
         err "adb not found in PATH"
     fi
 
-    if command -v emulator &>/dev/null; then
-        log "emulator: $(emulator -version 2>&1 | head -1)"
-    else
-        err "emulator not found in PATH"
+    if [ "$WITH_EMULATOR" -eq 1 ]; then
+        if command -v emulator &>/dev/null; then
+            log "emulator: $(emulator -version 2>&1 | head -1)"
+        else
+            err "emulator not found in PATH"
+        fi
     fi
 
     log "SDK components installed."
@@ -334,7 +342,23 @@ step7_doctor() {
 # ============================================================
 # Main
 # ============================================================
+usage() {
+    echo "Usage: $0 [--no-emulator]"
+    echo ""
+    echo "  --no-emulator  Skip KVM/libvirt, the Android emulator, the system image and the AVD."
+    echo "                 Use this to debug on a physical device over USB."
+    echo "                 Rerun without the flag later to add them."
+}
+
 main() {
+    for arg in "$@"; do
+        case "$arg" in
+            --no-emulator) WITH_EMULATOR=0 ;;
+            -h|--help) usage; exit 0 ;;
+            *) err "Unknown option: $arg"; usage; exit 1 ;;
+        esac
+    done
+
     echo "========================================"
     echo " Flutter Dev Setup for Arch Linux"
     echo " (No Android Studio)"
@@ -342,10 +366,14 @@ main() {
     echo ""
 
     step1_system_deps
-    step2_kvm_setup
+    if [ "$WITH_EMULATOR" -eq 1 ]; then
+        step2_kvm_setup
+    fi
     step3_android_sdk
     step4_sdk_components
-    step5_create_avd
+    if [ "$WITH_EMULATOR" -eq 1 ]; then
+        step5_create_avd
+    fi
     step6_flutter
     step7_doctor
 
@@ -357,11 +385,16 @@ main() {
     warn "IMPORTANT: Source your shell config or open a new terminal:"
     echo "    source ~/.zshrc"
     echo ""
-    log "To launch the emulator:"
-    echo "    emulator @pixel_api34 &"
-    echo ""
-    log "To verify adb sees the emulator:"
-    echo "    adb devices"
+    if [ "$WITH_EMULATOR" -eq 1 ]; then
+        log "To launch the emulator:"
+        echo "    emulator @pixel_api34 &"
+        echo ""
+        log "To verify adb sees the emulator:"
+        echo "    adb devices"
+    else
+        log "Enable USB debugging on your phone, plug it in, then verify adb sees it:"
+        echo "    adb devices"
+    fi
     echo ""
 }
 
